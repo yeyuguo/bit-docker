@@ -5,6 +5,7 @@ ENV  DEVELOPMENT=false
 ENV BITPATH=/bit-bin
 
 #Install ssh and bit dependencies
+
 RUN apt-get update 
 RUN apt-get upgrade -y 
 RUN apt-get install -y vim nano openssh-server curl && mkdir /var/run/sshd
@@ -22,10 +23,17 @@ RUN bit config set analytics_reporting false
 RUN bit config set error_reporting false
 RUN bit config set no_warnings true
 RUN mkdir -p /root/.ssh
-RUN mkdir /tmp/scope
+RUN mkdir -p /tmp/scope
+
+# can't mount id_rsa.pub file
+RUN cd /tmp/
+ADD id_rsa.pub /tmp/id_rsa.pub
+
 WORKDIR /tmp/scope
 ADD init.sh .
-RUN chmod +x init.sh
+# fix can't copy file on windows
+RUN cd /tmp/scope && sed -i 's/\r$//' ./init.sh && chmod 777 ./init.sh
+
 
 EXPOSE 22
 CMD  ["/tmp/scope/init.sh"]
